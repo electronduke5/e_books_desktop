@@ -14,7 +14,6 @@ class ImageHelper {
       if(image == null) return null;
       return File(image.files.single.path!);
     } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
     }
     return null;
   }
@@ -28,7 +27,6 @@ class ImageHelper {
       if(result == null) return null;
       return File(result.files.single.path!);
     } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
     }
     return null;
   }

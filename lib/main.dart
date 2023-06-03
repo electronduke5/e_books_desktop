@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:e_books_desktop/presentation/cubits/auth/auth_cubit.dart';
+import 'package:e_books_desktop/presentation/cubits/author/author_cubit.dart';
 import 'package:e_books_desktop/presentation/cubits/book/book_cubit.dart';
 import 'package:e_books_desktop/presentation/cubits/post/post_cubit.dart';
 import 'package:e_books_desktop/presentation/cubits/profile/profile_cubit.dart';
@@ -79,7 +80,7 @@ class _EBooksAppState extends State<EBooksApp> {
           create: (context) => ThemeCubit(prefs),
           child: BlocBuilder<ThemeCubit, ThemeMode>(
             builder: (context, themeMode) => MaterialApp(
-              title: 'Flutter Demo',
+              title: 'eBooks',
               debugShowCheckedModeBanner: false,
               theme: FlexThemeData.light(
                 scheme: FlexScheme.redWine,
@@ -192,6 +193,8 @@ class _EBooksAppState extends State<EBooksApp> {
                   providers: [
                     BlocProvider<ProfileCubit>(
                         create: (context) => ProfileCubit()..loadProfile()),
+                    BlocProvider<AuthorCubit>(
+                        create: (context) => AuthorCubit()..loadAllAuthors()),
                     BlocProvider<BookCubit>(
                         create: (context) => BookCubit()..loadBooks()),
                     BlocProvider<PostCubit>(

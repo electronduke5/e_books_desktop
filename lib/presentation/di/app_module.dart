@@ -4,6 +4,7 @@ import 'package:e_books_desktop/presentation/di/profile_holder.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../data/repository/auth_repo_impl.dart';
+import '../../data/repository/author_repo_impl.dart';
 import '../../data/repository/book_repository_impl.dart';
 import '../../data/repository/post_repo_impl.dart';
 import '../../data/repository/preferences_repo_impl.dart';
@@ -11,6 +12,7 @@ import '../../data/repository/profile_repo_impl.dart';
 import '../../data/repository/review_repo_impl.dart';
 import '../../data/repository/shelf_repo_impl.dart';
 import '../../domain/repository/auth_repository.dart';
+import '../../domain/repository/author_repository.dart';
 import '../../domain/repository/book_repository.dart';
 import '../../domain/repository/post_repository.dart';
 import '../../domain/repository/preferences_repository.dart';
@@ -29,6 +31,7 @@ class AppModule {
     _provideShelfRepository();
     _provideReviewRepository();
     _providePostRepository();
+    _provideAuthorRepository();
 
     _provided = true;
   }
@@ -87,6 +90,14 @@ class AppModule {
 
   static PostRepository getPostRepository() {
     return GetIt.instance.get<PostRepositoryImpl>();
+  }
+
+  void _provideAuthorRepository() {
+    GetIt.instance.registerSingleton(AuthorRepositoryImpl());
+  }
+
+  static AuthorRepository getAuthorRepository() {
+    return GetIt.instance.get<AuthorRepositoryImpl>();
   }
 
   void _providePreferencesRepository() {

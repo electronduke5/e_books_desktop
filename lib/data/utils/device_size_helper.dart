@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class DeviceSizeHelper{
   static int getAxisCount(BuildContext context) {
-    print(MediaQuery.of(context).size.width);
     if(MediaQuery.of(context).size.width > 770) {
       return 4;
     }

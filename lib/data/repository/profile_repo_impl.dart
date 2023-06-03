@@ -20,7 +20,6 @@ class ProfileRepositoryImpl with ApiService<User> implements ProfileRepository {
       receivedUser = await get(
           fromJson: (Map<String, dynamic> json) => User.fromJson(json), id: user!.id);
     }
-    print('User from AppModule: ${AppModule.getProfileHolder().user}');
     return receivedUser;
   }
 

@@ -37,7 +37,6 @@ class _ProfileBooksPageState extends State<ProfileBooksPage> {
       body: SafeArea(
         child: BlocBuilder<BookCubit, BookState>(
           builder: (context, state) {
-            print('state in profile Books: ${state.booksStatus.runtimeType}');
             switch (state.booksStatus.runtimeType) {
               case const (LoadingStatus<List<Book>>):
                 return const Center(child: CircularProgressIndicator());
@@ -51,9 +50,6 @@ class _ProfileBooksPageState extends State<ProfileBooksPage> {
                   crossAxisSpacing: 20,
                   itemCount: state.booksStatus.item!.length,
                   itemBuilder: (BuildContext context, int index) {
-                    print(state.booksStatus.item!.length);
-                    print(
-                        '---allBooks.length: ${state.booksStatus.item!.length}');
                     return BookWidget(book: state.booksStatus.item![index]);
                   },
                 );

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../data/models/author.dart';
@@ -5,9 +7,11 @@ import '../../data/models/book.dart';
 import 'book_cover_text.dart';
 
 class BookWidget extends StatelessWidget {
-  const BookWidget({Key? key, required this.book}) : super(key: key);
+  BookWidget({Key? key, required this.book}) : super(key: key);
 
   final Book book;
+  Color? firstColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
+  Color? secondColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +37,7 @@ class BookWidget extends StatelessWidget {
                   tag:'book${book.id}',
                   child: () {
                     if (book.image == null) {
-                      return BookCoverText(book: book);
+                      return BookCoverText(book: book, firstColor: firstColor, secondColor:  secondColor,);
                     }
                     return Align(
                       alignment: Alignment.center,

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 
+import '../../../data/models/author.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
 import '../../di/app_module.dart';
@@ -18,33 +19,43 @@ class BookCubit extends Cubit<BookState> {
     try {
       final List<Book> books = await repository.getAllBooks(user: user);
       emit(state.copyWith(booksStatus: LoadedStatus(item: books)));
-      print('books: $books');
-      print('---there2');
+
       return books;
     } catch (exception) {
       emit(state.copyWith(booksStatus: FailedStatus(state.booksStatus.message)));
-      print(state.booksStatus.message);
-      print(exception.toString());
       return null;
     }
   }
 
-  Future<Book?> addBook({required String title, required int yearOfIssue, required File image, required File file, User? user}) async {
+  Future<void> deleteBook({required int bookId}) async {
+    final repository = AppModule.getBookRepository();
+    emit(state.copyWith(deleteBookStatus: LoadingStatus()));
+    try {
+      await repository.deleteBook(bookId: bookId);
+      emit(state.copyWith(deleteBookStatus: LoadedStatus()));
+      emit(state.copyWith(deleteBookStatus: const IdleStatus()));
+    } catch (exception) {
+      emit(state.copyWith(deleteBookStatus: FailedStatus(state.booksStatus.message)));
+    }
+  }
+
+  Future<Book?> addBook(
+      {required String title, required int yearOfIssue, required File image, required File file, User? user, Author? author}) async {
     final repository = AppModule.getBookRepository();
     emit(state.copyWith(addBookStatus: LoadingStatus()));
     try {
       int? roleId = user?.role?.id;
-      final Book? book = await repository.addBook(title: title, yearOfIssue: yearOfIssue, image: image, book: file, user_id: roleId == 2 ? roleId : null);
+      Book? book = await repository.addBook(
+          title: title, yearOfIssue: yearOfIssue, image: image, book: file, user_id: roleId == 2 ? user!.id : null);
+      if(author != null){
+        book = await repository.addAuthorOnBook(authorId: author.id, bookId: book!.id);
+      }
       emit(state.copyWith(addBookStatus: LoadedStatus(item: book)));
-      emit(state.copyWith(addBookStatus:const IdleStatus()));
-      print('books: $book');
-      print('---there2');
+      emit(state.copyWith(addBookStatus: const IdleStatus()));
       return book;
     } catch (exception) {
       emit(state.copyWith(addBookStatus: FailedStatus(state.booksStatus.message)));
-      print(state.booksStatus.message);
-      print(exception.toString());
-      emit(state.copyWith(addBookStatus:const IdleStatus()));
+      emit(state.copyWith(addBookStatus: const IdleStatus()));
       return null;
     }
   }
@@ -55,13 +66,9 @@ class BookCubit extends Cubit<BookState> {
     try {
       final List<Book> books = await repository.getUserBookmarks();
       emit(state.copyWith(booksStatus: LoadedStatus(item: books)));
-      print('books: $books');
-      print('---there2');
       return books;
     } catch (exception) {
       emit(state.copyWith(booksStatus: FailedStatus(state.booksStatus.message)));
-      print(state.booksStatus.message);
-      print(exception.toString());
       return null;
     }
   }
@@ -72,19 +79,19 @@ class BookCubit extends Cubit<BookState> {
     try {
       final Book? book = await repository.addBookmark(bookId: bookId);
       emit(state.copyWith(bookmarkStatus: LoadedStatus(item: book)));
-      print('book: $book');
-      print('---there2');
       return book == null ? false : true;
     } catch (exception) {
       emit(state.copyWith(bookmarkStatus: FailedStatus(state.booksStatus.message)));
-      print(state.booksStatus.message);
-      print(exception.toString());
       return null;
     }
   }
 
   Future<void> imageChanged(File file) async {
     emit(state.copyWith(image: file, book: state.book));
+  }
+
+  Future<void> authorChanged(Author author) async {
+    emit(state.copyWith(author: author));
   }
 
   Future<void> removeImage() async {
@@ -99,6 +106,3 @@ class BookCubit extends Cubit<BookState> {
     emit(state.copyWith(book: file, image: state.image));
   }
 }
-
-
-

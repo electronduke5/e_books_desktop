@@ -57,6 +57,7 @@ class ProfilePage extends StatelessWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+
                                   Card(
                                     shape: const RoundedRectangleBorder(
                                       borderRadius: BorderRadius.all(
@@ -162,13 +163,20 @@ class ProfilePage extends StatelessWidget {
                                                       if (state.image != null) {
                                                         return Column(
                                                           children: [
-                                                            Align(
-                                                              alignment: Alignment.centerLeft,
-                                                              child: SizedBox(
-                                                                //width: 150,
-                                                                height: (MediaQuery.of(context).size.height) * 0.25,
-                                                                child: Image.file(File(state.image!.path)),
-                                                              ),
+                                                            Row(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                SizedBox(
+                                                                  //width: 150,
+                                                                  height: (MediaQuery.of(context).size.height) * 0.25,
+                                                                  child: Image.file(File(state.image!.path)),
+                                                                ),
+                                                                Align(
+                                                                  alignment: Alignment.topLeft,
+                                                                  child: IconButton(onPressed: () async { await context
+                                                                      .read<PostCubit>().removeImage();}, icon: const Icon(Icons.delete_outline)),
+                                                                )
+                                                              ],
                                                             ),
                                                             const SizedBox(height: 10),
                                                           ],
@@ -221,6 +229,8 @@ class ProfilePage extends StatelessWidget {
                                                               .then((value) {
                                                             postController.clear();
                                                             context
+                                                                .read<PostCubit>().removeImage();
+                                                            context
                                                                 .read<ProfileCubit>()
                                                                 .loadProfile(user: AppModule.getProfileHolder().user);
                                                           });
@@ -272,7 +282,6 @@ class ProfilePage extends StatelessWidget {
       icon: const Icon(Icons.more_vert, size: 28),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       itemBuilder: (context) => [
-        PopupIconMenuItem(title: 'Редатировать профиль', icon: Icons.edit_outlined),
         PopupIconMenuItem(title: 'Выйти', icon: Icons.exit_to_app_outlined),
         PopupIconMenuItem(
           title: 'Сменить тему',
@@ -283,9 +292,6 @@ class ProfilePage extends StatelessWidget {
       ],
       onSelected: (value) {
         switch (value) {
-          case 'Редатировать профиль':
-            //buildEditProfileWidget(context);
-            break;
           case 'Выйти':
             AppModule.getPreferencesRepository().removeSavedProfile();
             Navigator.of(context).pushNamed('/sign-in');

@@ -19,7 +19,6 @@ class SignInPage extends StatelessWidget {
       body: SafeArea(
         child: BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {
-            print(state.apiStatus.runtimeType);
             switch (state.apiStatus.runtimeType) {
               case const (FailedStatus<User>):
                 SnackBarInfo.show(
@@ -34,13 +33,11 @@ class SignInPage extends StatelessWidget {
                     .copyWith(apiStatus: const IdleStatus());
                 break;
               case const (LoadedStatus<User>):
-                print('hash in BlocListener: ${state.hash}');
-                if(state.apiStatus.item?.role?.id == 2 || state.apiStatus.item?.role?.id == 3){
                   Navigator.of(context).pushNamed('/codeConfirmPage', arguments: {
                     'email': _emailController.value.text,
                     'hash': state.hash,
                   });
-                }
+
                 break;
             }
           },
@@ -91,9 +88,6 @@ class SignInPage extends StatelessWidget {
                                           .read<AuthCubit>()
                                           .emailChanged(_emailController.value.text);
 
-                                      print(
-                                          'email in loginpage: ${_emailController.value.text}');
-
                                       await context.read<AuthCubit>().sendAuthCode().then((value) {
                                         if(state.apiStatus is FailedStatus<User>){
                                           SnackBarInfo.show(
@@ -111,12 +105,6 @@ class SignInPage extends StatelessWidget {
                                               isSuccess: true);
                                         }
                                       });
-                                      // if(state is LoadedStatus){
-                                      //   Navigator.of(context).pushNamed('/codeConfirmPage', arguments: {
-                                      //     'email': _emailController.value.text,
-                                      //     'hash' : state.hash,
-                                      //   });
-                                      // }
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(

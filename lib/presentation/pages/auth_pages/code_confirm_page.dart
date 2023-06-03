@@ -38,24 +38,25 @@ class _CodeConfirmPageState extends State<CodeConfirmPage> {
     final hash = arguments['hash'];
     return Scaffold(
       body: SafeArea(
-        child: BlocListener<AuthCubit,AuthState>(
-          listener:(context, state){
-            print('status in code_cofirm_page: ${state.apiStatus.runtimeType}');
+        child: BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
             switch (state.apiStatus.runtimeType) {
               case const (FailedStatus<User>):
                 SnackBarInfo.show(
                   context: context,
-                  message: state.apiStatus.message?.substring(11) ?? 'Неверный логин или пароль',
+                  message: state.apiStatus.message?.substring(11) ?? 'Неверный логин',
                   isSuccess: false,
                 );
-                context
-                    .read<AuthCubit>()
-                    .state
-                    .copyWith(apiStatus: const IdleStatus());
+                context.read<AuthCubit>().state.copyWith(apiStatus: const IdleStatus());
                 break;
               case const (LoadedStatus<User>):
-                print('hash in BlocListener: ${state.hash}');
-                Navigator.of(context).pushReplacementNamed('/main');
+                if (state.apiStatus.item?.role?.id == 2 || state.apiStatus.item?.role?.id == 3) {
+                  Navigator.of(context).pushReplacementNamed('/main');
+                } else {
+                  SnackBarInfo.show(
+                      context: context, message: 'Данная версия приложения доступна только авторам.', isSuccess: false);
+                }
+
                 break;
             }
           },
@@ -72,8 +73,7 @@ class _CodeConfirmPageState extends State<CodeConfirmPage> {
                   ),
                 ),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30),
+                  padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30),
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width / 2.5,
                     child: PinCodeTextField(
@@ -91,12 +91,11 @@ class _CodeConfirmPageState extends State<CodeConfirmPage> {
                       ),
                       keyboardType: TextInputType.number,
                       onCompleted: (value) async {
-                        debugPrint("Completed");
                         await context.read<AuthCubit>().signIn(
-                          hash: hash,
-                          email: email,
-                          code: inputCode,
-                        );
+                              hash: hash,
+                              email: email,
+                              code: inputCode,
+                            );
                       },
                     ),
                   ),
@@ -116,16 +115,34 @@ class _CodeConfirmPageState extends State<CodeConfirmPage> {
                 // ),
                 () {
                   return isTimerCancel
-                      ? TextButton(
-                          onPressed: () async {
-                            await context.read<AuthCubit>().sendAuthCode().then(
-                                (value) => Navigator.of(context)
-                                    .pushNamed('/codeConfirmPage'));
-                            resetTimer();
+                      ? BlocBuilder<AuthCubit, AuthState>(
+                          builder: (context, state) {
+                            return TextButton(
+                                onPressed: () async {
+                                  context.read<AuthCubit>().emailChanged(email);
+                                  await context.read<AuthCubit>().sendAuthCode().then((value) {
+                                    Navigator.of(context).pushNamed('/codeConfirmPage', arguments: {
+                                      'email': email,
+                                      'hash': value!,
+                                    });
+                                  });
+                                  resetTimer();
+                                },
+                                child: const Text('Отправить код ещё раз'));
                           },
-                          child: Text('Отправить код ещё раз'))
-                      : Text('Повторно отправить код через $seconds секунд', style: TextStyle(color: Theme.of(context).colorScheme.error),);
+                        )
+                      : Text(
+                          'Повторно отправить код через $seconds секунд',
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        );
                 }(),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/sign-in');
+                  },
+                  child: const Text('Назад'),
+                ),
               ],
             ),
           ),

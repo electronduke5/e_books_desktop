@@ -17,8 +17,6 @@ class ShelfCubit extends Cubit<ShelfState> {
       emit(state.copyWith(shelvesStatus: LoadedStatus(item: shelves)));
       return shelves;
     } catch (e) {
-      print(e);
-      print(state.shelvesStatus.message);
       emit(state.copyWith(shelvesStatus: FailedStatus(state.shelvesStatus.message)));
       return null;
     }

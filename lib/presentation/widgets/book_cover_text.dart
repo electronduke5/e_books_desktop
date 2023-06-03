@@ -6,12 +6,18 @@ import '../../data/models/author.dart';
 import '../../data/models/book.dart';
 
 class BookCoverText extends StatelessWidget {
-  const BookCoverText({
+  BookCoverText({
     super.key,
     required this.book,
+    this.height = 230,
+    this.firstColor,
+    this.secondColor,
   });
 
   final Book book;
+  final double height;
+  Color? firstColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
+  Color? secondColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +32,12 @@ class BookCoverText extends StatelessWidget {
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
                   colors: [
-                    Colors.primaries[Random().nextInt(Colors.primaries.length)],
-                    Colors.primaries[Random().nextInt(Colors.primaries.length)],
+                    firstColor!,
+                    secondColor!,
                   ],
                 )),
-            height: 230,
-            width: 150,
+            height: height,
+            width: height / 1.5,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -42,16 +48,13 @@ class BookCoverText extends StatelessWidget {
                 ),
                 () {
                   if (book.authors == []) {
-                    return Text('Авторов нет');
+                    return const Text('Авторов нет');
                   }
                   for (Author author in book.authors!) {
                     return Text(author.getFullName(),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall!
-                            .copyWith(fontSize: 16));
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 16));
                   }
-                  return Text('');
+                  return const Text('');
                 }(),
               ],
             ),

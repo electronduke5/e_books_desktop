@@ -35,8 +35,7 @@ class ReviewCard extends StatelessWidget {
                     maxRadius: 20,
                     child: Text(
                       review.author.getInitials(),
-                      style:
-                          const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+                      style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -44,11 +43,10 @@ class ReviewCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        review.author.getFullName(),
+                        '${review.author.surname} ${review.author.name}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      Text(review.getDate(),
-                          style: Theme.of(context).textTheme.bodySmall),
+                      Text(review.getDate(), style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
                   () {
@@ -58,10 +56,8 @@ class ReviewCard extends StatelessWidget {
                         child: IconButton(
                           onPressed: () async {
                             await context.read<ReviewCubit>().deleteReview(review).then(
-                                  (value) => SnackBarInfo.show(
-                                      message: 'Отзыв удален',
-                                      context: context,
-                                      isSuccess: true),
+                                  (value) =>
+                                      SnackBarInfo.show(message: 'Отзыв удален', context: context, isSuccess: true),
                                 );
                           },
                           icon: const Icon(
@@ -121,8 +117,7 @@ class ReviewCard extends StatelessWidget {
                   return const Text('Авторов нет');
                 }
                 for (Author author in book.authors!) {
-                  return Text(author.getInitials(),
-                      style: Theme.of(context).textTheme.bodySmall);
+                  return Text(author.getInitials(), style: Theme.of(context).textTheme.bodySmall);
                 }
                 return const SizedBox();
               }(),

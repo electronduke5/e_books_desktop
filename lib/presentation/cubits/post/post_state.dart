@@ -23,7 +23,7 @@ class PostState {
       deletePostStatus: deletePostStatus ?? this.deletePostStatus,
       addPostStatus: addPostStatus ?? this.addPostStatus,
       allPostsStatus: allPostsStatus ?? this.allPostsStatus,
-      image: image ?? this.image,
+      image: image ,
     );
   }
 }

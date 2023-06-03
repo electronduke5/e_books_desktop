@@ -53,6 +53,7 @@ class PostCubit extends Cubit<PostState> {
         image: image,
       );
       emit(state.copyWith(addPostStatus: LoadedStatus<Post>(item: post)));
+      emit(state.copyWith(addPostStatus: const IdleStatus()));
       return post;
     } catch (exception) {
       emit(state.copyWith(
@@ -64,5 +65,8 @@ class PostCubit extends Cubit<PostState> {
 
   Future<void> imageChanged(File image) async {
     emit(state.copyWith(image: image));
+  }
+  Future<void> removeImage() async {
+    emit(state.copyWith(image: null));
   }
 }

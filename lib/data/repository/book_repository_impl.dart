@@ -63,4 +63,22 @@ class BookRepositoryImpl with ApiService<Book> implements BookRepository {
           'user_id': user_id
         });
   }
+
+  @override
+  Future<void> deleteBook({required int bookId}) {
+    apiRoute = ApiConstUrl.bookUrl;
+    return delete(bookId);
+  }
+
+  @override
+  Future<Book> addAuthorOnBook({required int authorId, required int bookId}) {
+    apiRoute = ApiConstUrl.addAuthorToBookUrl;
+    return post(
+      fromJson: (Map<String, dynamic> json) => Book.fromJson(json),
+      data: {
+        'author_id' : authorId,
+        'book_id' : bookId,
+      },
+    );
+  }
 }

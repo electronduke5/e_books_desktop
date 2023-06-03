@@ -19,6 +19,7 @@ class BooksPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<BookCubit>().loadBooks();
     return SafeArea(
       child: Column(
         children: [
@@ -70,7 +71,6 @@ class BooksPage extends StatelessWidget {
 
   Widget buildBooksList(BuildContext context) {
     int _getAxisCount() {
-      print(MediaQuery.of(context).size.width);
       if(MediaQuery.of(context).size.width > 770) {
         return 4;
       }
@@ -83,23 +83,18 @@ class BooksPage extends StatelessWidget {
     }
     return RefreshIndicator(onRefresh: () async {
       await context.read<BookCubit>().loadBooks().then((value) {
-        print(value);
         allBooks = value ?? allBooks;
-        print('allBooks: $allBooks');
       });
     }, child: BlocBuilder<BookCubit, BookState>(
       builder: (context, state) {
-        print('booksStatus: ${state.booksStatus.runtimeType}');
         switch (state.booksStatus.runtimeType) {
           case const (LoadingStatus<List<Book>>):
             return const Center(child: CircularProgressIndicator());
           case const (LoadedStatus<List<Book>>):
-            print('item in bookstatus: ${state.booksStatus.item}');
             if (state.booksStatus.item == null) {
               return const Center(child: CircularProgressIndicator());
             }
             allBooks = state.booksStatus.item!;
-            //allBooks.isEmpty ? allBooks = state.booksStatus.item! : () {};
             return Column(
               children: [
                 Expanded(
@@ -109,7 +104,6 @@ class BooksPage extends StatelessWidget {
                     crossAxisSpacing: 20,
                     itemCount: allBooks.length,
                     itemBuilder: (BuildContext context, int index) {
-                      print('---allBooks.length: ${allBooks.length}');
                       return BookWidget(book: allBooks[index]);
                     },
                   ),

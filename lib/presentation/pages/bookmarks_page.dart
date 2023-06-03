@@ -22,12 +22,10 @@ class BookmarkPage extends StatelessWidget {
         await context.read<BookCubit>().loadBookmarks();
       }, child: BlocBuilder<BookCubit, BookState>(
         builder: (context, state) {
-          print('booksStatus: ${state.booksStatus.runtimeType}');
           switch (state.booksStatus.runtimeType) {
             case const (LoadingStatus<List<Book>>):
               return const Center(child: CircularProgressIndicator());
             case const (LoadedStatus<List<Book>>):
-              print('item in bookstatus: ${state.booksStatus.item}');
               if (state.booksStatus.item == null) {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -39,7 +37,6 @@ class BookmarkPage extends StatelessWidget {
                       crossAxisCount: 2,
                       itemCount: allBooks.length,
                       itemBuilder: (BuildContext context, int index) {
-                        print('---allBooks.length: ${allBooks.length}');
                         return BookWidget(book: allBooks[index]);
                       },
                     ),

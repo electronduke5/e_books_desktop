@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:e_books_desktop/presentation/cubits/book/book_cubit.dart';
 import 'package:e_books_desktop/presentation/cubits/models_status.dart';
@@ -21,17 +23,19 @@ class BookInfoPage extends StatelessWidget {
   BookInfoPage({Key? key}) : super(key: key);
 
   final scaffoldState = GlobalKey<ScaffoldState>();
+  final reviewScrollController = ScrollController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController descriptionController = TextEditingController();
+  Color? firstColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
+  Color? secondColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
   int rating = 0;
 
   bool checkBookmark(Book? book) {
     User user = AppModule.getProfileHolder().user;
     if (user.bookmarks == null) return false;
     if (user.bookmarks!.isEmpty) return false;
-    Book? bookmark =
-        user.bookmarks?.firstWhereOrNull((element) => element.id == book?.id);
+    Book? bookmark = user.bookmarks?.firstWhereOrNull((element) => element.id == book?.id);
     if (bookmark == null) return false;
     return true;
   }
@@ -45,145 +49,170 @@ class BookInfoPage extends StatelessWidget {
     return Scaffold(
       key: scaffoldState,
       appBar: buildAppBar(book, context),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width / 2,
-                  child: Hero(
-                    tag: 'book${book!.id}',
-                    child: () {
-                      if (book!.image == null) {
-                        return BookCoverText(book: book);
-                      }
-                      return Align(
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.8,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: Image.network(book.image!),
-                          ),
-                        ),
-                      );
-                    }(),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                book?.title ?? 'Название книги',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 20),
-                              ),
-                              () {
-                                if (book?.authors?.isEmpty ?? true) {
-                                  return const Text('Авторов нет');
-                                }
-                                for (Author author in book!.authors!) {
-                                  return Text(author.getInitials(),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall);
-                                }
-                                return const SizedBox();
-                              }(),
-                              // Text(book.authors.getInitials(),
-                              //     style: Theme.of(context).textTheme.bodySmall),
-                            ],
-                          ),
-                          const Spacer(),
-                          const Icon(Icons.star_outline),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.2,
-                            child: Text(book?.rating != 0.0
-                                ? '${book?.rating ?? '0'}/10'
-                                : 'Отзывов ещё нет'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child:
-                            Text('Год выпуска: ${book?.yearOfIssue ?? '0000'}'),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context)
-                                .pushNamed('/read-book', arguments: book);
-                          },
-                          child: const Text(
-                            'ЧИТАТЬ',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          _showSheet(book!.id);
-                        },
-                        child: const Text(
-                          'Добавить на полку',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Divider(),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Отзывы',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          OutlinedButton(
-                              onPressed: () {
-                                _showCreateReviewSheet(book!);
-                              },
-                              child: const Text('Добавить отзыв'))
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      () {
-                        if (book!.reviews == null || book.reviews!.isEmpty) {
-                          return const Text('Отзывов еще нет');
+      body: BlocListener<BookCubit, BookState>(
+        listener: (context, state) async {
+          if (state.deleteBookStatus is LoadedStatus) {
+            SnackBarInfo.show(context: context, message: 'Книга успешно удалена', isSuccess: true);
+            context.read<BookCubit>().loadBooks();
+          }
+        },
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2,
+                    child: Hero(
+                      tag: 'book${book!.id}',
+                      child: () {
+                        if (book.image == null) {
+                          return BookCoverText(
+                            book: book,
+                            height: MediaQuery.of(context).size.height * 0.8,
+                            firstColor: firstColor,
+                            secondColor: secondColor,
+                          );
                         }
-                        return SizedBox(
-                          height: 200,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: book.reviews?.length,
-                            itemBuilder: (context, index) {
-                              return ReviewCard(
-                                review: book.reviews![index],
-                              );
-                            },
+                        return Align(
+                          alignment: Alignment.topCenter,
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.8,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Image.network(book.image!),
+                            ),
                           ),
                         );
                       }(),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        () {
+                          if (AppModule.getProfileHolder().user.role?.id == 3) {
+                            return Column(
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      await context.read<BookCubit>().deleteBook(bookId: book.id);
+                                    },
+                                    icon: const Icon(Icons.delete_outline),
+                                    label: const Text('Удалить книгу'),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                              ],
+                            );
+                          } else {
+                            return const SizedBox();
+                          }
+                        }(),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    book.title,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                                  ),
+                                  () {
+                                    if (book.authors?.isEmpty ?? true) {
+                                      if (book.creator == null) {
+                                        return Text(
+                                          'Авторов нет',
+                                          style: Theme.of(context).textTheme.bodyMedium,
+                                        );
+                                      } else {
+                                        return Text(
+                                          '${book.creator!.surname} ${book.creator!.name}',
+                                          style: Theme.of(context).textTheme.bodyMedium,
+                                        );
+                                      }
+                                    }
+                                    for (Author author in book.authors!) {
+                                      return Text(author.getInitials(), style: Theme.of(context).textTheme.bodyMedium);
+                                    }
+                                    return const SizedBox();
+                                  }(),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.star_outline),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.2,
+                              child: Text(
+                                book.rating != 0.0 ? '${book.rating ?? '0'}/10' : 'Отзывов ещё нет',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Год выпуска: ${book.yearOfIssue}',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        const Divider(),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                'Отзывы',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                            ),
+                            OutlinedButton(
+                                onPressed: () {
+                                  _showCreateReviewSheet(book);
+                                },
+                                child: const Text('Добавить отзыв'))
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        () {
+                          if (book.reviews == null || book.reviews!.isEmpty) {
+                            return const Text('Отзывов еще нет');
+                          }
+                          return SizedBox(
+                            height: 200,
+                            child: Scrollbar(
+                              controller: reviewScrollController,
+                              child: ListView.builder(
+                                controller: reviewScrollController,
+                                scrollDirection: Axis.horizontal,
+                                itemCount: book.reviews?.length,
+                                itemBuilder: (context, index) {
+                                  return ReviewCard(
+                                    review: book.reviews![index],
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        }(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -223,7 +252,7 @@ class BookInfoPage extends StatelessWidget {
     BuildContext context = scaffoldState.currentContext!;
     final shelves = await context.read<ShelfCubit>().loadShelves();
     scaffoldState.currentState?.showBottomSheet(
-      (context) => BlocListener<ShelfCubit, ShelfState>(
+          (context) => BlocListener<ShelfCubit, ShelfState>(
         listener: (context, state) {},
         child: SizedBox(
           height: 220,
@@ -239,17 +268,13 @@ class BookInfoPage extends StatelessWidget {
                 const Divider(),
                 const SizedBox(height: 10),
                 BlocBuilder<ShelfCubit, ShelfState>(builder: (context, state) {
-                  print(
-                      'shelves status in book_info_page: ${state.shelvesStatus.runtimeType}');
-                  if (state.shelvesStatus.runtimeType ==
-                      LoadingStatus<List<Shelf>>) {
+                  if (state.shelvesStatus.runtimeType == LoadingStatus<List<Shelf>>) {
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
                   }
 
-                  if (state.shelvesStatus.runtimeType ==
-                      LoadedStatus<List<Shelf>>) {
+                  if (state.shelvesStatus.runtimeType == LoadedStatus<List<Shelf>>) {
                     return Expanded(
                       child: ListView.builder(
                         itemCount: shelves!.length,
@@ -264,15 +289,12 @@ class BookInfoPage extends StatelessWidget {
                               onTap: () async {
                                 await context
                                     .read<ShelfCubit>()
-                                    .addBookToShelf(
-                                        bookId: bookId,
-                                        shelfId: shelves[index].id)
+                                    .addBookToShelf(bookId: bookId, shelfId: shelves[index].id)
                                     .then((value) {
                                   Navigator.of(context).pop();
                                   SnackBarInfo.show(
                                       context: context,
-                                      message:
-                                          "Книга добавлена на полку '${shelves[index].title}'",
+                                      message: "Книга добавлена на полку '${shelves[index].title}'",
                                       isSuccess: true);
                                 });
                               },
@@ -294,11 +316,10 @@ class BookInfoPage extends StatelessWidget {
 
   void _showCreateReviewSheet(Book book) async {
     scaffoldState.currentState?.showBottomSheet(
-      (context) => BlocListener<ReviewCubit, ReviewState>(
+          (context) => BlocListener<ReviewCubit, ReviewState>(
         listener: (context, state) {
           if (state.createReviewStatus.runtimeType == LoadedStatus<Review>) {
-            SnackBarInfo.show(
-                context: context, message: "Отзыв доавблен", isSuccess: true);
+            SnackBarInfo.show(context: context, message: "Отзыв доавблен", isSuccess: true);
           }
         },
         child: SizedBox(
@@ -348,12 +369,9 @@ class BookInfoPage extends StatelessWidget {
                     updateOnDrag: true,
                     itemSize: MediaQuery.of(context).size.width / 11,
                     itemBuilder: (context, index) {
-                      return Icon(Icons.star,
-                          color: Theme.of(context).colorScheme.secondary);
+                      return Icon(Icons.star, color: Theme.of(context).colorScheme.secondary);
                     },
-                    onRatingUpdate: (double value) => context
-                        .read<ReviewCubit>()
-                        .ratingChanged(value.toInt()),
+                    onRatingUpdate: (double value) => context.read<ReviewCubit>().ratingChanged(value.toInt()),
                   ),
                   const SizedBox(height: 10),
                   BlocBuilder<ReviewCubit, ReviewState>(
@@ -366,8 +384,7 @@ class BookInfoPage extends StatelessWidget {
                     builder: (context, state) => ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState?.validate() ?? false) {
-                          final String description =
-                              descriptionController.value.text;
+                          final String description = descriptionController.value.text;
                           await context
                               .read<ReviewCubit>()
                               .createReview(

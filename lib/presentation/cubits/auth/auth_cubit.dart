@@ -27,7 +27,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> sendAuthCode() async {
+  Future<String?> sendAuthCode() async {
     final repository = AppModule.getAuthRepository();
     emit(state.copyWith(apiStatus: LoadingStatus()));
     try {
@@ -36,11 +36,11 @@ class AuthCubit extends Cubit<AuthState> {
           apiStatus: LoadedStatus(data: response),
           email: state.email,
           hash: response['code']));
-      print(state.hash);
-      print(response);
+      return response['code'];
     } catch (exception) {
       emit(state.copyWith(apiStatus: FailedStatus(exception.toString())));
       emit(state.copyWith(apiStatus: const IdleStatus()));
+      return null;
     }
   }
 

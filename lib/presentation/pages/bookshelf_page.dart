@@ -52,8 +52,6 @@ class _BookshelfPageState extends State<BookshelfPage> {
                           .read<ShelfCubit>()
                           .getShelfById(shelf!.id)
                           .then((value) {
-                        print('new shelf: ${value}');
-                        print('old shelf2: ${shelf}');
                       });
                     });
                     setState(() {
